@@ -25,12 +25,23 @@
     },
     neymar: {
       card: {
-        routeFocus: "Santos FC to Al Hilal",
-        routeFocusJa: "サントスFCからアル・ヒラルへ"
+        routeFocus: "Back to Santos FC",
+        routeFocusJa: "サントスFCへの帰還"
       },
-      routeLabel: "Santos FC → FC Barcelona → Paris Saint-Germain → Al Hilal",
-      routeLabelJa: "サントスFC → FCバルセロナ → パリ・サンジェルマン → アル・ヒラル",
-      roles: []
+      routeLabel: "Santos FC → FC Barcelona → Paris Saint-Germain → Al Hilal → Santos FC",
+      routeLabelJa: "サントスFC → FCバルセロナ → パリ・サンジェルマン → アル・ヒラル → サントスFC",
+      roles: [],
+      apply(player) {
+        const lastStop = player.route[player.route.length - 1];
+        if (lastStop && lastStop.role === "Santos FC" && lastStop.stadium === "Vila Belmiro") return;
+
+        player.route.push({
+          name: "Santos",
+          role: "Santos FC",
+          stadium: "Vila Belmiro",
+          coordinates: [-46.3389, -23.9511]
+        });
+      }
     },
     modric: {
       card: {
@@ -54,5 +65,7 @@
     update.roles.forEach(({ index, role }) => {
       if (player.route[index]) player.route[index].role = role;
     });
+
+    if (typeof update.apply === "function") update.apply(player);
   });
 })();
