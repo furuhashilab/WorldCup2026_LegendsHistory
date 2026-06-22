@@ -1192,8 +1192,8 @@ const scenes = [
     title: "MetLife Stadium",
     meta: bilingual("Final venue close-up", "決勝スタジアムへ"),
     description: bilingual(
-      "Before the final title, the camera moves in on the stadium where the last road ends.",
-      "最後の文字が出る前に、すべての道がたどり着く決勝スタジアムへ寄っていきます。"
+      "The world’s greatest stage. The last dance of legends.",
+      "世界最高の舞台。伝説のラストダンスへ。"
     ),
     camera: {
       center: finalVenue.coordinates,
