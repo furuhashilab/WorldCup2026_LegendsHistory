@@ -281,7 +281,10 @@ h1 {
   right: 28px;
   bottom: 28px;
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+  justify-content: flex-end;
+  max-width: min(420px, calc(100vw - 56px));
   z-index: 7;
   transition:
     right 600ms ease,
@@ -374,6 +377,12 @@ button:hover {
 button:focus-visible {
   outline: 3px solid rgba(255, 211, 111, 0.42);
   outline-offset: 3px;
+}
+
+button[aria-pressed="true"] {
+  border-color: var(--gold-bright);
+  color: #171106;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
 }
 
 button:disabled {
@@ -594,6 +603,7 @@ button:disabled {
     right: 12px;
     bottom: 132px;
     gap: 8px;
+    max-width: calc(100vw - 24px);
   }
 
   .is-finale .controls {
@@ -602,7 +612,7 @@ button:disabled {
   }
 
   button {
-    min-width: 102px;
+    min-width: 96px;
     padding: 10px 13px;
     font-size: 0.8rem;
   }
