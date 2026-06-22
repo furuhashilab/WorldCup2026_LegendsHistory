@@ -32,8 +32,6 @@ const BIRTHPLACE_HOLD = 4200;
 const STADIUM_STOP_HOLD = 2800;
 const ROUTE_COMPLETE_HOLD = 2800;
 const CONVERGENCE_HOLD = 3400;
-const NETWORK_HOLD = 4500;
-const FINAL_STADIUM_HOLD = 5200;
 const MAP_IDLE_TIMEOUT = 1800;
 const BUILDING_LAYER_ID = "world-cup-3d-buildings";
 const BUILDING_VISIBILITY_ZOOM = 13;
@@ -236,7 +234,7 @@ function prepareRoutesForScene(targetIndex) {
       });
     }
 
-    if (["full-network", "final-stadium", "fade-to-black", "last-dance"].includes(scene.id)) {
+    if (["fade-to-black", "last-dance"].includes(scene.id)) {
       revealFullNetwork();
     }
   }
@@ -1051,8 +1049,20 @@ async function playStory() {
     if (scene.convergenceAnimation) {
       await wait(scene.preAnimationHold || 500, token);
       if (!isPlaybackActive(token)) return;
-      await animateConvergence(scene.convergenceAnimation.duration, token);
+      if (scene.convergenceCamera) {
+        await Promise.all([
+          animateConvergence(scene.convergenceAnimation.duration, token),
+          flyToCameraAndSettle(scene.convergenceCamera, token)
+        ]);
+      } else {
+        await animateConvergence(scene.convergenceAnimation.duration, token);
+      }
       if (!isPlaybackActive(token)) return;
+    }
+
+    if (scene.completionPanel) {
+      updatePanel(scene.completionPanel, index);
+      applySceneChrome(scene.completionPanel);
     }
 
     if (scene.stadiumTour) {
@@ -1220,6 +1230,15 @@ const networkCamera = {
   duration: 5200
 };
 
+const finalStadiumPanel = {
+  title: "MetLife Stadium",
+  meta: bilingual("Final venue close-up", "決勝スタジアムへ"),
+  description: bilingual(
+    "The world’s greatest stage. The last dance of legends.",
+    "世界最高の舞台。伝説のラストダンスへ。"
+  )
+};
+
 const scenes = [
   {
     id: "opening",
@@ -1312,57 +1331,22 @@ const scenes = [
       "Nu Stadium、Al-Awwal Park、Vila Belmiro、San Siroから、4人のレジェンドがニュージャージーへ向かいます。"
     ),
     camera: { center: [-26, 38], zoom: 1.7, pitch: 50, bearing: -42, duration: 5200 },
-    popup: {
+    popupAfterAnimation: {
       coordinates: finalVenue.coordinates,
       title: finalVenue.name,
       description: bilingual(finalVenue.description, finalVenue.descriptionJa)
     },
     convergenceAnimation: { duration: CONVERGENCE_DURATION },
-    hold: CONVERGENCE_HOLD
-  },
-
-  {
-    id: "full-network",
-    title: "Full Route Network",
-    meta: bilingual("The map of an era", "一つの時代を描く地図"),
-    description: bilingual(
-      "Every birthplace, career route, and final approach remains visible before the lights fall.",
-      "レジェンドの出生地、キャリアのルート、最後の集結線が一枚の地図に残ります。"
-    ),
-    camera: networkCamera,
-    before: revealFullNetwork,
-    popup: {
-      coordinates: finalVenue.coordinates,
-      title: "All roads meet",
-      description: bilingual(
-        "The full route network converges at MetLife Stadium.",
-        "すべての軌跡がメットライフ・スタジアムで交わります。"
-      )
-    },
-    hold: NETWORK_HOLD
-  },
-
-  {
-    id: "final-stadium",
-    title: "MetLife Stadium",
-    meta: bilingual("Final venue close-up", "決勝スタジアムへ"),
-    description: bilingual(
-      "The world’s greatest stage. The last dance of legends.",
-      "世界最高の舞台。伝説のラストダンスへ。"
-    ),
-    camera: {
+    convergenceCamera: {
       center: finalVenue.coordinates,
       zoom: 16.05,
       pitch: 76,
       bearing: -34,
-      duration: 5600
+      duration: CONVERGENCE_DURATION,
+      curve: 1.05
     },
-    popup: {
-      coordinates: finalVenue.coordinates,
-      title: finalVenue.name,
-      description: bilingual(finalVenue.description, finalVenue.descriptionJa)
-    },
-    hold: FINAL_STADIUM_HOLD
+    completionPanel: finalStadiumPanel,
+    hold: CONVERGENCE_HOLD
   },
 
   {
