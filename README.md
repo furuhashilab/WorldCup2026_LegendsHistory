@@ -1,56 +1,58 @@
 # The Final Generation: One Last World Cup
 
-MapLibre GL JSで作った、2026年FIFAワールドカップへ向かう4人のレジェンドの3Dストーリーマップです。
+2026年FIFAワールドカップへ向かう4人のレジェンドを、3D地図でたどるストーリーマップです。
 
-公開URL:
+リオネル・メッシ、クリスティアーノ・ロナウド、ネイマール、ルカ・モドリッチ。それぞれの原点とキャリアの舞台を巡り、最後に4本のルートがニュージャージーのMetLife Stadiumへ集まります。
 
-```text
-https://shocpsa.github.io/WorldCup2026_LegendsHistory/
-```
+## 作品を見る
 
-## 編集するファイル
+[The Final Generation: One Last World Cup](https://furuhashilab.github.io/WorldCup2026_LegendsHistory/)
 
-基本的には下のファイルだけ触ればOKです。
+ページが古い表示のままになっている場合は、ブラウザを再読み込みしてください。
 
-```text
-index.html
-style.css
-script.js
-players.js
-assets/players/
-.nojekyll
-README.md
-```
+## 見どころ
 
-`players.js`:
-選手名、国、写真URL、写真クレジット、選手カードの文章、キャリアルート、ポイント座標、ライン色を編集します。
+- 映画予告のような暗めの演出と、ワールドカップらしいゴールドのアクセント
+- 3Dカメラワークで巡る、選手の故郷とクラブキャリアの舞台
+- 各クラブのホームスタジアムをたどるルート表現
+- 4人のルートが決勝会場へ同時に集まるクライマックス
+- 選手カード、顔写真、日英併記の説明
 
-`script.js`:
-シーン順、シーンカードのタイトル・本文、カメラ位置、滞在時間、ルートアニメーション、最終演出を編集します。シーンカードの本文を変えたい場合はこのファイルです。
+## 操作方法
 
-`style.css`:
-カード、文字、ボタン、シーン移動バー、色味など見た目を編集します。
+- `Start` でストーリーを開始します。
+- `Pause` で一時停止し、`Resume` で再開します。
+- `Replay` で最初からもう一度再生します。
+- 画面下のシーンバーから、見たい場面へ移動できます。
 
-`index.html`:
-ページの骨組みと読み込み順です。通常は触らなくて大丈夫です。
+スマートフォンでも見られますが、3D地図とアニメーションを使うため、PCやタブレットのほうが見やすい場合があります。
 
-`assets/players/`:
-ローカルに置く選手写真用フォルダです。現在はネイマールとモドリッチの画像を使っています。メッシとロナウドはWikimedia Commonsの直リンクを`players.js`で参照しています。
+## 登場選手
 
-## 写真クレジット
+### Lionel Messi
 
-選手カード内に、作者名・ライセンス・元画像リンクを表示しています。クレジット情報は`players.js`の`photoCredit`から編集できます。
+アルゼンチンのロサリオから始まり、Newell's Old Boys、FC Barcelona、Paris Saint-Germain、Inter Miami CFへ。2022年に世界の頂点へ立ったキャプテンの道をたどります。
 
-## 整理方針
+### Cristiano Ronaldo
 
-以前の上書き用ファイルは、本体ファイルへ統合しました。
+マデイラ島のフンシャルから、CD Nacional、Sporting CP、Manchester United、Real Madrid、Juventus、Al Nassrへ。長いキャリアの軌跡を、ヨーロッパから中東まで追います。
 
-```text
-career-teams.js
-career-copy.js
-map-performance.js
-scene-nav.js
-scene-nav.css
-```
+### Neymar Jr.
 
-これらはもう編集・追加しなくて大丈夫です。
+モジ・ダス・クルーゼスから、Santos FC、FC Barcelona、Paris Saint-Germain、Al Hilal、そして再びSantos FCへ。ブラジルの10番が歩んだ華やかなルートを描きます。
+
+### Luka Modrić
+
+クロアチアのザダルから、NK Zadar、Dinamo Zagreb、Tottenham Hotspur、Real Madrid、AC Milanへ。小さな街から世界最高峰へ進んだ司令塔の物語です。
+
+## クレジット
+
+この作品はファンメイドの非公式プロジェクトです。FIFA、各国代表、各クラブ、選手本人による公式コンテンツではありません。
+
+地図表示にはMapLibre GL JSを使用しています。地図データやタイルのクレジットは、作品画面内の地図上に表示しています。
+
+選手写真はWikimedia Commonsの画像またはそのローカルコピーを使用しています。作者名、ライセンス、元画像リンクは作品内の選手カードに表示しています。
+
+## 推奨環境
+
+WebGLに対応した最新版のChrome、Edge、Safari、Firefoxでの閲覧を推奨します。地図データを読み込むため、インターネット接続が必要です。
