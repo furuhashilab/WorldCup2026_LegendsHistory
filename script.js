@@ -997,8 +997,8 @@ const scenes = [
     title: "Final Convergence",
     meta: bilingual(`Four final stadiums \u2192 ${finalVenue.name}`, `4つの最終スタジアム → ${finalVenue.name}`),
     description: bilingual(
-      "Nu Stadium, Al-Awwal Park, Kingdom Arena, and San Siro launch their final lines toward New Jersey together.",
-      "Nu Stadium、Al-Awwal Park、Kingdom Arena、San Siroから、4本の線が同時にニュージャージーへ向かいます。"
+      "From Nu Stadium, Al-Awwal Park, Vila Belmiro, and San Siro, four legends make their way to New Jersey.",
+      "Nu Stadium、Al-Awwal Park、Kingdom Arena、San Siroから、4人のレジェンドがニュージャージーへ向かいます。"
     ),
     camera: { center: [-26, 38], zoom: 1.7, pitch: 50, bearing: -42, duration: 5200 },
     popup: {
