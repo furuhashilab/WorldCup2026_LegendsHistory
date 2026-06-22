@@ -1153,8 +1153,8 @@ const scenes = [
     title: "Final Convergence",
     meta: bilingual(`Four final stadiums \u2192 ${finalVenue.name}`, `4つの最終スタジアム → ${finalVenue.name}`),
     description: bilingual(
-      "Nu Stadium, Al-Awwal Park, Vila Belmiro, and San Siro launch their final lines toward New Jersey together.",
-      "Nu Stadium、Al-Awwal Park、Vila Belmiro、San Siroから、4本の線が同時にニュージャージーへ向かいます。"
+      "From Nu Stadium, Al-Awwal Park, Vila Belmiro, and San Siro, four legends make their way to New Jersey.",
+      "Nu Stadium、Al-Awwal Park、Vila Belmiro、San Siroから、4人のレジェンドがニュージャージーへ向かいます。"
     ),
     camera: { center: [-26, 38], zoom: 1.7, pitch: 50, bearing: -42, duration: 5200 },
     popup: {
@@ -1171,8 +1171,8 @@ const scenes = [
     title: "Full Route Network",
     meta: bilingual("The map of an era", "一つの時代を描く地図"),
     description: bilingual(
-      "Every birthplace, landmark, career route, and final approach remains visible before the lights fall.",
-      "出生地、ランドマーク、キャリアのルート、最後の集結線が一枚の地図に残ります。"
+      "Every birthplace, career route, and final approach remains visible before the lights fall.",
+      "レジェンドの出生地、キャリアのルート、最後の集結線が一枚の地図に残ります。"
     ),
     camera: networkCamera,
     before: revealFullNetwork,
@@ -1181,7 +1181,7 @@ const scenes = [
       title: "All roads meet",
       description: bilingual(
         "The full route network converges at MetLife Stadium.",
-        "すべてのルートがメットライフ・スタジアムで交わります。"
+        "すべての軌跡がメットライフ・スタジアムで交わります。"
       )
     },
     hold: NETWORK_HOLD
