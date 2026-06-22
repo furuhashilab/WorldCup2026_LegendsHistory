@@ -34,8 +34,8 @@ window.FINAL_GENERATION_DATA = {
         roleJa: "アルゼンチンの象徴",
         highlight: "World Cup champion, 2022",
         highlightJa: "2022年ワールドカップ優勝",
-        routeFocus: "Rosario to Miami",
-        routeFocusJa: "ロサリオからマイアミへ"
+        routeFocus: "Newell's to Inter Miami CF",
+        routeFocusJa: "ニューウェルズからインテル・マイアミCFへ"
       },
       landmark: {
         name: "Obelisco de Buenos Aires",
@@ -51,10 +51,10 @@ window.FINAL_GENERATION_DATA = {
         description: "The river city where Lionel Messi's football life began.",
         descriptionJa: "リオ・パラナ沿いの街。リオネル・メッシのサッカー人生が始まった場所です。"
       },
-      routeLabel: "Rosario \u2192 Barcelona \u2192 Paris \u2192 Miami",
-      routeLabelJa: "ロサリオ → バルセロナ → パリ → マイアミ",
+      routeLabel: "Newell's Old Boys \u2192 FC Barcelona \u2192 Paris Saint-Germain \u2192 Inter Miami CF",
+      routeLabelJa: "ニューウェルズ・オールドボーイズ → FCバルセロナ → パリ・サンジェルマン → インテル・マイアミCF",
       route: [
-        { name: "Rosario", role: "Birthplace", coordinates: [-60.6393, -32.9442] },
+        { name: "Rosario", role: "Newell's Old Boys", coordinates: [-60.6393, -32.9442] },
         {
           name: "Barcelona",
           role: "FC Barcelona",
@@ -69,7 +69,7 @@ window.FINAL_GENERATION_DATA = {
         },
         {
           name: "Miami",
-          role: "Inter Miami",
+          role: "Inter Miami CF",
           stadium: "Nu Stadium",
           coordinates: [-80.2596, 25.793]
         }
@@ -97,8 +97,8 @@ window.FINAL_GENERATION_DATA = {
         roleJa: "ポルトガルの絶対的レジェンド",
         highlight: "A final shot at the trophy",
         highlightJa: "最後の頂点を狙う物語",
-        routeFocus: "Madeira to Riyadh",
-        routeFocusJa: "マデイラからリヤドへ"
+        routeFocus: "CD Nacional to Al Nassr",
+        routeFocusJa: "CDナシオナルからアル・ナスルへ"
       },
       landmark: {
         name: "Bel\u00e9m Tower",
@@ -114,10 +114,10 @@ window.FINAL_GENERATION_DATA = {
         description: "Madeira's capital, where Cristiano Ronaldo's path first took shape.",
         descriptionJa: "マデイラ島の中心都市。クリスティアーノ・ロナウドの原点です。"
       },
-      routeLabel: "Funchal \u2192 Lisbon \u2192 Manchester \u2192 Madrid \u2192 Turin \u2192 Riyadh",
-      routeLabelJa: "フンシャル → リスボン → マンチェスター → マドリード → トリノ → リヤド",
+      routeLabel: "CD Nacional \u2192 Sporting CP \u2192 Manchester United \u2192 Real Madrid \u2192 Juventus \u2192 Al Nassr",
+      routeLabelJa: "CDナシオナル → スポルティングCP → マンチェスター・ユナイテッド → レアル・マドリード → ユヴェントス → アル・ナスル",
       route: [
-        { name: "Funchal", role: "Birthplace", coordinates: [-16.9241, 32.6669] },
+        { name: "Funchal", role: "CD Nacional", coordinates: [-16.9241, 32.6669] },
         {
           name: "Lisbon",
           role: "Sporting CP",
@@ -172,8 +172,8 @@ window.FINAL_GENERATION_DATA = {
         roleJa: "ブラジルの10番",
         highlight: "Carrying the modern Brazil story",
         highlightJa: "現代ブラジルを背負うスター",
-        routeFocus: "Santos roots to Riyadh",
-        routeFocusJa: "サントスの原点からリヤドへ"
+        routeFocus: "Back to Santos FC",
+        routeFocusJa: "サントスFCへの帰還"
       },
       landmark: {
         name: "Christ the Redeemer",
@@ -189,8 +189,8 @@ window.FINAL_GENERATION_DATA = {
         description: "The S\u00e3o Paulo city where Neymar Jr.'s story started.",
         descriptionJa: "サンパウロ州の街。ネイマールJr.の物語が始まった場所です。"
       },
-      routeLabel: "Mogi das Cruzes \u2192 Santos \u2192 Barcelona \u2192 Paris \u2192 Riyadh",
-      routeLabelJa: "モジ・ダス・クルーゼス → サントス → バルセロナ → パリ → リヤド",
+      routeLabel: "Santos FC \u2192 FC Barcelona \u2192 Paris Saint-Germain \u2192 Al Hilal \u2192 Santos FC",
+      routeLabelJa: "サントスFC → FCバルセロナ → パリ・サンジェルマン → アル・ヒラル → サントスFC",
       route: [
         { name: "Mogi das Cruzes", role: "Birthplace", coordinates: [-46.1857, -23.5208] },
         {
@@ -216,6 +216,12 @@ window.FINAL_GENERATION_DATA = {
           role: "Al Hilal",
           stadium: "Kingdom Arena",
           coordinates: [46.6056, 24.7756]
+        },
+        {
+          name: "Santos",
+          role: "Santos FC",
+          stadium: "Vila Belmiro",
+          coordinates: [-46.3389, -23.9511]
         }
       ]
     },
@@ -241,8 +247,8 @@ window.FINAL_GENERATION_DATA = {
         roleJa: "クロアチア黄金世代の司令塔",
         highlight: "Ballon d'Or winner, 2018",
         highlightJa: "2018年バロンドール受賞",
-        routeFocus: "Zadar to Milan",
-        routeFocusJa: "ザダルからミラノへ"
+        routeFocus: "NK Zadar to AC Milan",
+        routeFocusJa: "NKザダルからACミランへ"
       },
       landmark: {
         name: "Dubrovnik Old Town",
@@ -258,10 +264,10 @@ window.FINAL_GENERATION_DATA = {
         description: "The Adriatic city tied to Luka Modri\u0107's early life.",
         descriptionJa: "アドリア海に面した街。ルカ・モドリッチの歩みの原点です。"
       },
-      routeLabel: "Zadar \u2192 Zagreb \u2192 London \u2192 Madrid \u2192 Milan",
-      routeLabelJa: "ザダル → ザグレブ → ロンドン → マドリード → ミラノ",
+      routeLabel: "NK Zadar \u2192 Dinamo Zagreb \u2192 Tottenham Hotspur \u2192 Real Madrid \u2192 AC Milan",
+      routeLabelJa: "NKザダル → ディナモ・ザグレブ → トッテナム・ホットスパー → レアル・マドリード → ACミラン",
       route: [
-        { name: "Zadar", role: "Birthplace", coordinates: [15.2322, 44.1194] },
+        { name: "Zadar", role: "NK Zadar", coordinates: [15.2322, 44.1194] },
         {
           name: "Zagreb",
           role: "Dinamo Zagreb",
