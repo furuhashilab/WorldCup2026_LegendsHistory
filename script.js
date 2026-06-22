@@ -3,6 +3,7 @@ const { players, finalVenue } = window.FINAL_GENERATION_DATA;
 const els = {
   app: document.querySelector("#app"),
   start: document.querySelector("#start-button"),
+  pause: document.querySelector("#pause-button"),
   replay: document.querySelector("#replay-button"),
   sceneCount: document.querySelector("#scene-count"),
   panelTitle: document.querySelector("#panel-title"),
@@ -49,12 +50,17 @@ const initialCamera = {
 
 let activePopup = null;
 let animationFrame = null;
+let animationCancel = null;
 let isPlaying = false;
+let isPaused = false;
 let playbackToken = 0;
 let jumpToken = 0;
 let currentSceneIndex = 0;
+let pauseSequence = 0;
+let pauseResolvers = [];
 
 els.start.disabled = true;
+els.pause.disabled = true;
 els.replay.disabled = true;
 
 const map = new maplibregl.Map({
@@ -82,6 +88,7 @@ map.on("load", () => {
 });
 
 els.start.addEventListener("click", () => playStory());
+els.pause.addEventListener("click", () => togglePause());
 els.replay.addEventListener("click", () => playStory());
 
 function buildSceneNav() {
@@ -114,8 +121,12 @@ function updateSceneNav(index) {
 function stopPlayback() {
   playbackToken += 1;
   isPlaying = false;
+  isPaused = false;
+  resolvePauseWaiters();
 
-  if (animationFrame) {
+  if (animationCancel) {
+    animationCancel();
+  } else if (animationFrame) {
     cancelAnimationFrame(animationFrame);
     animationFrame = null;
   }
@@ -123,6 +134,64 @@ function stopPlayback() {
   map.stop();
   els.start.disabled = false;
   els.replay.disabled = false;
+  updatePauseButton();
+}
+
+function togglePause() {
+  if (!isPlaying) return;
+
+  if (isPaused) {
+    resumePlayback();
+  } else {
+    pausePlayback();
+  }
+}
+
+function pausePlayback() {
+  if (!isPlaying || isPaused) return;
+
+  isPaused = true;
+  pauseSequence += 1;
+  map.stop();
+  updatePauseButton();
+  setStatus("Paused");
+}
+
+function resumePlayback() {
+  if (!isPlaying || !isPaused) return;
+
+  isPaused = false;
+  updatePauseButton();
+  setStatus("Resuming");
+  resolvePauseWaiters();
+}
+
+function updatePauseButton() {
+  els.pause.disabled = !isPlaying;
+  els.pause.textContent = isPaused ? "Resume / 再開" : "Pause / 一時停止";
+  els.pause.setAttribute("aria-pressed", String(isPaused));
+}
+
+function resolvePauseWaiters() {
+  const resolvers = pauseResolvers.splice(0);
+  resolvers.forEach((resolve) => resolve());
+}
+
+function waitForResume(token) {
+  if (!isPaused) return Promise.resolve(!token || isPlaybackActive(token));
+
+  return new Promise((resolve) => {
+    pauseResolvers.push(resolve);
+  }).then(() => !token || isPlaybackActive(token));
+}
+
+async function waitWhilePaused(token) {
+  while (isPaused) {
+    const stillActive = await waitForResume(token);
+    if (!stillActive) return false;
+  }
+
+  return !token || isPlaybackActive(token);
 }
 
 async function jumpToScene(index) {
@@ -691,9 +760,22 @@ function waitForMapIdle(timeout = MAP_IDLE_TIMEOUT) {
   });
 }
 
-async function flyToCameraAndSettle(camera) {
+async function flyToCameraAndSettle(camera, token = null) {
+  if (!(await waitWhilePaused(token))) return;
+
+  const pauseVersion = pauseSequence;
   set3DBuildingsForCamera(camera);
   await flyToCamera(camera);
+  if (!(await waitWhilePaused(token))) return;
+
+  if (token && pauseSequence !== pauseVersion && isPlaybackActive(token)) {
+    await flyToCamera({
+      ...camera,
+      duration: Math.min(camera.duration || 1600, 1600),
+      curve: camera.curve || 1.08
+    });
+  }
+
   await waitForMapIdle(camera.idleTimeout || MAP_IDLE_TIMEOUT);
 }
 
@@ -707,8 +789,21 @@ function set3DBuildingsForCamera(camera) {
   map.setLayoutProperty(BUILDING_LAYER_ID, "visibility", shouldShow ? "visible" : "none");
 }
 
-function wait(ms) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
+async function wait(ms, token = null) {
+  let remaining = ms;
+
+  while (remaining > 0) {
+    if (token && !isPlaybackActive(token)) return;
+    if (!(await waitWhilePaused(token))) return;
+
+    const slice = Math.min(remaining, 80);
+    const startedAt = performance.now();
+    await new Promise((resolve) => window.setTimeout(resolve, slice));
+
+    if (!isPaused) {
+      remaining -= performance.now() - startedAt;
+    }
+  }
 }
 
 function routeCoordinates(player) {
@@ -727,15 +822,15 @@ function revealFullNetwork() {
   });
 }
 
-function animateRoute(sourceId, coordinates, duration, label) {
+function animateRoute(sourceId, coordinates, duration, label, token) {
   const metrics = buildLineMetrics(coordinates);
   return animateProgress(duration, (progress) => {
     setSourceLine(sourceId, partialLine(metrics, progress), progress);
     setStatus(`${label} ${Math.round(progress)}%`);
-  });
+  }, token);
 }
 
-function animateConvergence(duration) {
+function animateConvergence(duration, token) {
   const lines = players.map((player) => ({
     player,
     sourceId: convergenceSourceId(player.id),
@@ -749,15 +844,66 @@ function animateConvergence(duration) {
       setSourceLine(sourceId, partialLine(metrics, progress), progress);
     });
     setStatus(`Convergence ${Math.round(progress)}%`);
-  });
+  }, token);
 }
 
-function animateProgress(duration, onProgress) {
-  const startedAt = performance.now();
+function animateProgress(duration, onProgress, token = null) {
+  let elapsed = 0;
+  let lastFrameAt = null;
 
   return new Promise((resolve) => {
+    let settled = false;
+
+    const clearAnimation = () => {
+      if (animationCancel === cancelAnimation) animationCancel = null;
+      animationFrame = null;
+    };
+
+    const cancelAnimation = () => {
+      if (settled) return;
+      settled = true;
+
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+
+      clearAnimation();
+      resolve();
+    };
+
+    const completeAnimation = () => {
+      if (settled) return;
+      settled = true;
+      clearAnimation();
+      onProgress(100);
+      resolve();
+    };
+
     function frame(now) {
-      const rawProgress = Math.min((now - startedAt) / duration, 1);
+      if (token && !isPlaybackActive(token)) {
+        cancelAnimation();
+        return;
+      }
+
+      if (isPaused) {
+        clearAnimation();
+        lastFrameAt = null;
+        waitForResume(token).then((stillActive) => {
+          if (!stillActive || settled) {
+            cancelAnimation();
+            return;
+          }
+
+          animationFrame = requestAnimationFrame(frame);
+        });
+        return;
+      }
+
+      if (lastFrameAt === null) lastFrameAt = now;
+      elapsed += now - lastFrameAt;
+      lastFrameAt = now;
+
+      const rawProgress = Math.min(elapsed / duration, 1);
       const progress = easeInOutCubic(rawProgress) * 100;
 
       onProgress(progress);
@@ -765,12 +911,11 @@ function animateProgress(duration, onProgress) {
       if (rawProgress < 1) {
         animationFrame = requestAnimationFrame(frame);
       } else {
-        animationFrame = null;
-        onProgress(100);
-        resolve();
+        completeAnimation();
       }
     }
 
+    animationCancel = cancelAnimation;
     animationFrame = requestAnimationFrame(frame);
   });
 }
@@ -864,14 +1009,17 @@ async function playStory() {
 
   const token = ++playbackToken;
   isPlaying = true;
+  isPaused = false;
   els.start.disabled = true;
   els.replay.disabled = true;
+  updatePauseButton();
 
   if (animationFrame) cancelAnimationFrame(animationFrame);
   resetStory();
 
   for (let index = 0; index < scenes.length; index += 1) {
     if (!isPlaybackActive(token)) return;
+    if (!(await waitWhilePaused(token))) return;
 
     const scene = scenes[index];
     updatePanel(scene, index);
@@ -880,7 +1028,7 @@ async function playStory() {
     setStatus(`Scene ${index + 1}`);
 
     if (scene.before) scene.before();
-    await flyToCameraAndSettle(scene.camera);
+    await flyToCameraAndSettle(scene.camera, token);
     if (!isPlaybackActive(token)) return;
 
     if (scene.popup && !scene.popupAfterAnimation) {
@@ -888,33 +1036,34 @@ async function playStory() {
     }
 
     if (scene.routeAnimation) {
-      await wait(scene.preAnimationHold || 400);
+      await wait(scene.preAnimationHold || 400, token);
       if (!isPlaybackActive(token)) return;
       await animateRoute(
         scene.routeAnimation.sourceId,
         scene.routeAnimation.coordinates,
         scene.routeAnimation.duration,
-        scene.routeAnimation.label
+        scene.routeAnimation.label,
+        token
       );
       if (!isPlaybackActive(token)) return;
     }
 
     if (scene.convergenceAnimation) {
-      await wait(scene.preAnimationHold || 500);
+      await wait(scene.preAnimationHold || 500, token);
       if (!isPlaybackActive(token)) return;
-      await animateConvergence(scene.convergenceAnimation.duration);
+      await animateConvergence(scene.convergenceAnimation.duration, token);
       if (!isPlaybackActive(token)) return;
     }
 
     if (scene.stadiumTour) {
-      await playStadiumTour(scene.stadiumTour);
+      await playStadiumTour(scene.stadiumTour, token);
       if (!isPlaybackActive(token)) return;
     }
 
     if (scene.afterAnimationCamera && !scene.stadiumTour) {
-      await wait(350);
+      await wait(350, token);
       if (!isPlaybackActive(token)) return;
-      await flyToCameraAndSettle(scene.afterAnimationCamera);
+      await flyToCameraAndSettle(scene.afterAnimationCamera, token);
       if (!isPlaybackActive(token)) return;
     }
 
@@ -934,13 +1083,15 @@ async function playStory() {
       els.finalCard.classList.add("is-visible");
     }
 
-    await wait(scene.hold ?? DEFAULT_HOLD);
+    await wait(scene.hold ?? DEFAULT_HOLD, token);
     if (!isPlaybackActive(token)) return;
   }
 
   isPlaying = false;
+  isPaused = false;
   els.start.disabled = false;
   els.replay.disabled = false;
+  updatePauseButton();
   setStatus("Complete");
 }
 
@@ -948,8 +1099,10 @@ function isPlaybackActive(token) {
   return isPlaying && token === playbackToken;
 }
 
-async function playStadiumTour(stops) {
+async function playStadiumTour(stops, token) {
   for (let index = 0; index < stops.length; index += 1) {
+    if (!(await waitWhilePaused(token))) return;
+
     const stop = stops[index];
     setStatus(`Stadium ${index + 1} / ${stops.length}`);
     await flyToCameraAndSettle({
@@ -959,13 +1112,15 @@ async function playStadiumTour(stops) {
       bearing: stop.bearing,
       duration: stop.duration || 2500,
       curve: 1.05
-    });
+    }, token);
+    if (!isPlaybackActive(token)) return;
+
     showPopup(
       stop.coordinates,
       stop.stadium,
       `${stop.club}\n${stop.city}`
     );
-    await wait(stop.hold || STADIUM_STOP_HOLD);
+    await wait(stop.hold || STADIUM_STOP_HOLD, token);
   }
 }
 
