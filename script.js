@@ -26,7 +26,7 @@ const els = {
 const GOLD = "#d7aa48";
 const GOLD_BRIGHT = "#ffd36f";
 const ROUTE_DURATION = 4700;
-const CONVERGENCE_DURATION = 6200;
+const CONVERGENCE_DURATION = 8200;
 const DEFAULT_HOLD = 1300;
 const BIRTHPLACE_HOLD = 4200;
 const STADIUM_STOP_HOLD = 2800;
@@ -828,7 +828,7 @@ function animateRoute(sourceId, coordinates, duration, label, token) {
   }, token);
 }
 
-function animateConvergence(duration, token) {
+function animateConvergence(duration, token, cameraPath = null) {
   const lines = players.map((player) => ({
     player,
     sourceId: convergenceSourceId(player.id),
@@ -841,6 +841,9 @@ function animateConvergence(duration, token) {
     lines.forEach(({ sourceId, metrics }) => {
       setSourceLine(sourceId, partialLine(metrics, progress), progress);
     });
+    if (cameraPath) {
+      applyCameraPathProgress(cameraPath, progress);
+    }
     setStatus(`Convergence ${Math.round(progress)}%`);
   }, token);
 }
@@ -975,6 +978,46 @@ function interpolateCoordinate(from, to, ratio) {
   ];
 }
 
+function applyCameraPathProgress(keyframes, progress) {
+  if (!Array.isArray(keyframes) || keyframes.length === 0) return;
+
+  const camera = interpolateCameraKeyframes(keyframes, progress);
+  set3DBuildingsForCamera(camera);
+  map.jumpTo({
+    center: camera.center,
+    zoom: camera.zoom,
+    pitch: camera.pitch,
+    bearing: camera.bearing
+  });
+}
+
+function interpolateCameraKeyframes(keyframes, progress) {
+  if (progress <= keyframes[0].progress) return keyframes[0];
+
+  for (let index = 1; index < keyframes.length; index += 1) {
+    const previous = keyframes[index - 1];
+    const next = keyframes[index];
+
+    if (progress <= next.progress) {
+      const localProgress = (progress - previous.progress) / (next.progress - previous.progress);
+      const easedProgress = easeInOutCubic(clamp(localProgress, 0, 1));
+
+      return {
+        center: interpolateCoordinate(previous.center, next.center, easedProgress),
+        zoom: interpolateNumber(previous.zoom, next.zoom, easedProgress),
+        pitch: interpolateNumber(previous.pitch, next.pitch, easedProgress),
+        bearing: interpolateNumber(previous.bearing, next.bearing, easedProgress)
+      };
+    }
+  }
+
+  return keyframes[keyframes.length - 1];
+}
+
+function interpolateNumber(from, to, ratio) {
+  return from + (to - from) * ratio;
+}
+
 function haversineKm(from, to) {
   const earthRadiusKm = 6371;
   const lat1 = degreesToRadians(from[1]);
@@ -1049,13 +1092,13 @@ async function playStory() {
     if (scene.convergenceAnimation) {
       await wait(scene.preAnimationHold || 500, token);
       if (!isPlaybackActive(token)) return;
-      if (scene.convergenceCamera) {
-        await Promise.all([
-          animateConvergence(scene.convergenceAnimation.duration, token),
-          flyToCameraAndSettle(scene.convergenceCamera, token)
-        ]);
-      } else {
-        await animateConvergence(scene.convergenceAnimation.duration, token);
+      await animateConvergence(
+        scene.convergenceAnimation.duration,
+        token,
+        scene.convergenceCameraPath
+      );
+      if (scene.convergenceCameraPath) {
+        await waitForMapIdle(scene.camera.idleTimeout || MAP_IDLE_TIMEOUT);
       }
       if (!isPlaybackActive(token)) return;
     }
@@ -1337,14 +1380,13 @@ const scenes = [
       description: bilingual(finalVenue.description, finalVenue.descriptionJa)
     },
     convergenceAnimation: { duration: CONVERGENCE_DURATION },
-    convergenceCamera: {
-      center: finalVenue.coordinates,
-      zoom: 16.05,
-      pitch: 76,
-      bearing: -34,
-      duration: CONVERGENCE_DURATION,
-      curve: 1.05
-    },
+    convergenceCameraPath: [
+      { progress: 0, center: [-26, 38], zoom: 1.7, pitch: 50, bearing: -42 },
+      { progress: 44, center: [-47, 39], zoom: 2.05, pitch: 52, bearing: -40 },
+      { progress: 70, center: [-62, 40], zoom: 3.1, pitch: 56, bearing: -38 },
+      { progress: 88, center: [-71.8, 40.7], zoom: 7.4, pitch: 64, bearing: -36 },
+      { progress: 100, center: finalVenue.coordinates, zoom: 15.35, pitch: 76, bearing: -34 }
+    ],
     completionPanel: finalStadiumPanel,
     hold: CONVERGENCE_HOLD
   },
